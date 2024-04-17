@@ -217,7 +217,13 @@ def digest_finished_sfms(rabbitip, rmqservice: RabbitMQService, scene_manager: S
         if(flag == 0):
         #convert each url to filepath
         #store png 
-            for i,fr_ in enumerate(sfm_data['frames']):
+            
+            # Sorts entries into correct order
+            frames_order = sfm_data['frame_order']
+            sfm_data['frames'] = sorted(sfm_data['frames'], key = lambda item: frames_order.index(item['file_path']))
+            logger.info(sfm_data)
+            
+            for i, fr_ in enumerate(sfm_data['frames']):
                 # TODO: This code trusts the file extensions from the worker
                 # TODO: handle files not found
                 url = fr_['file_path']

@@ -116,7 +116,7 @@ def split_video_into_frames(video_path, output_path, max_frames=200):
   avg_threshold = (sorted_list[-1] + THRESHOLD)/2
   if avg_threshold < 100:
     # ERROR: Video is too blurry. Please try again.
-    return 4
+    return 4, None
   
 
   needs_adjust = False ## determines if we need to adjust
@@ -155,6 +155,8 @@ def split_video_into_frames(video_path, output_path, max_frames=200):
   ## write to the folder the images we want
   vidcap = cv2.VideoCapture(video_path)
   success, image = vidcap.read()
+  # order keeps track of proper frame order
+  order = []
   while success:
     if (blur_list[count] >= THRESHOLD):
       if (needs_adjust == True):
@@ -162,13 +164,15 @@ def split_video_into_frames(video_path, output_path, max_frames=200):
       cv2.imwrite(f"{output_path}/img_{count}.png", image)  
       logger.info("Saved image {}".format(count))
     success, image = vidcap.read()
-    
+
+    order.append(f"http://sfm-worker:5100/{output_path}/img_{count}.png")
+
     count += 1
   vidcap.release()
 
   #Sucess, return 0
   ## can return img_width, img_height, and wanted_frames
-  return 0
+  return 0, order
 
 def test():
   instance_name = "test"

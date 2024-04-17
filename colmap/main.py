@@ -56,7 +56,7 @@ def run_full_sfm_pipeline(id, video_file_path, input_data_dir, output_data_dir):
     imgs_folder = os.path.join(output_path, "imgs")
     logger.info("Video file path:{}".format(video_file_path))
 
-    split_status = split_video_into_frames(video_file_path, imgs_folder, 100)
+    split_status, frame_order = split_video_into_frames(video_file_path, imgs_folder, 100)
     # Catches flag for blurriness
     if split_status == 4:
         logger.error("Video is too blurry.")
@@ -84,6 +84,8 @@ def run_full_sfm_pipeline(id, video_file_path, input_data_dir, output_data_dir):
     motion_data = get_json_matrices(camera_stats_path, parsed_motion_path)
     motion_data["id"] = id
     motion_data["flag"] = 0
+    # Important for ordering frames properly
+    motion_data["frame_order"] = frame_order
 
     # Save copy of motion data
     with open(os.path.join(output_path, "transforms_data.json"), "w") as outfile:
@@ -137,6 +139,7 @@ def colmap_worker():
             file_path = os.path.join(imgs_folder, file_name)
             file_url = to_url(file_path)
             motion_data["frames"][i]["file_path"] = file_url
+            motion_data["frames"][i]["image_number"] = i
 
         json_motion_data = json.dumps(motion_data)
         channel.basic_publish(
